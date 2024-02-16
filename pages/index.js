@@ -1,61 +1,67 @@
-import Head from "next/head"
-import styles from "../styles/Home.module.css"
-import { useEffect, useState } from "react"
+import Head from "next/head";
+import styles from "../styles/Home.module.css";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [outputText, setOutputText] = useState("")
-  const [selections, setSelections] = useState([])
-  const [inputContent, setInputContent] = useState("")
-  const [infos, setInfos] = useState([])
-  const [reader, setReader] = useState({})
+  const [outputText, setOutputText] = useState("");
+  const [selections, setSelections] = useState([]);
+  const [inputContent, setInputContent] = useState("");
+  const [infos, setInfos] = useState([]);
+  const [reader, setReader] = useState({});
 
   useEffect(() => {
-    const reader = new FileReader()
-    reader.addEventListener("load", (e) => setInputContent(e.target.result))
-    setReader(reader)
+    const reader = new FileReader();
+    reader.addEventListener("load", (e) => setInputContent(e.target.result));
+    setReader(reader);
     if (window?.localStorage.getItem("selections")) {
-      setSelections(JSON.parse(window.localStorage.getItem("selections")))
-      console.log("Loaded preferences from browser storage")
+      setSelections(JSON.parse(window.localStorage.getItem("selections")));
+      console.log(
+        `Loaded ${selections.length} preferences from browser storage`
+      );
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    insertOptions()
-    printOutput()
-  }, [inputContent])
+    insertOptions();
+    printOutput();
+  }, [inputContent]);
+
+  useEffect(() => {
+    printOutput();
+  }, [selections]);
 
   const setInfosStorage = (selections) => {
-    const selctionsString = JSON.stringify(selections)
-    window.localStorage.setItem("selections", selctionsString)
-  }
+    const selctionsString = JSON.stringify(selections);
+    window.localStorage.setItem("selections", selctionsString);
+  };
 
   const dropHandler = (ev) => {
-    ev.preventDefault()
+    ev.preventDefault();
     if (ev.dataTransfer.items) {
-      ;[...ev.dataTransfer.items].forEach((item, i) => {
+      [...ev.dataTransfer.items].forEach((item, i) => {
         if (item.kind === "file") {
-          reader.readAsText(file)
+          reader.readAsText(file);
         }
-      })
+      });
     }
     // dropZone.style["border"] = "5px dashed lightgrey"
-  }
+  };
 
   const dragOverHandler = (ev) => {
-    dropZone.style["border"] = "5px solid lightgrey"
-    ev.preventDefault()
-  }
+    dropZone.style["border"] = "5px solid lightgrey";
+    ev.preventDefault();
+  };
 
   const dragLeaveHandler = (ev) => {
-    dropZone.style["border"] = "5px dashed lightgrey"
-    ev.preventDefault()
-  }
+    dropZone.style["border"] = "5px dashed lightgrey";
+    ev.preventDefault();
+  };
 
   const changeHandler = (event) => {
     // setFile()
     // console.log({ file })
-    reader.readAsText(event.target?.files?.[0])
-  }
+    reader.readAsText(event.target?.files?.[0]);
+  };
 
   const insertOptions = () => {
     setInfos(
@@ -67,86 +73,33 @@ export default function Home() {
       ].map((match) => {
         const infoFromStorage = selections.find(
           (sel) => sel.name === match?.[0].replace("\t", "")
-        )
+        );
         return {
           name: match?.[0].replace("\t", ""),
           before: infoFromStorage?.before || "",
           after: infoFromStorage?.after || "",
-        }
+        };
       })
-    )
-  }
+    );
+  };
 
   const handleDelimiterChange = (e) => {
     setSelections(
       selections.map((selection) => {
         if (e.target.id.includes(selection.name)) {
           if (e.target.id.includes("before")) {
-            selection.before = e.target.value
+            selection.before = e.target.value;
           }
           if (e.target.id.includes("after")) {
-            selection.after = e.target.value
+            selection.after = e.target.value;
           }
         }
-        return selection
+        return selection;
       })
-    )
-    const targetID = e.target.id.replace
-    setInfosStorage(selections)
-    printOutput()
-  }
-
-  // const renderOptions = () => {
-  //   const infosContainer = document.createElement("div")
-  //   infosContainer.id = "infos"
-  //   infos.forEach(({ name, before, after }) => {
-  //     const container = document.createElement("div")
-
-  //     const beforeText = document.createElement("textarea")
-  //     beforeText.id = `before_${name}`
-  //     beforeText.style = "width:10%"
-  //     beforeText.rows = "1"
-  //     beforeText.textContent = before
-  //     beforeText.addEventListener("input", handleDelimiterChange)
-
-  //     const afterText = document.createElement("textarea")
-  //     afterText.id = `after_${name}`
-  //     afterText.style = "width:10%"
-  //     afterText.rows = "1"
-  //     // console.log(after);
-  //     afterText.textContent = after
-  //     afterText.addEventListener("input", handleDelimiterChange)
-
-  //     const checkbox = document.createElement("input")
-  //     checkbox.type = "checkbox"
-  //     checkbox.name = name
-  //     checkbox.checked = selections.map((s) => s.name).includes(name)
-  //     checkbox.addEventListener("change", (e) => {
-  //       if (e.target.checked) {
-  //         setSelections(
-  //           selections.map((s) => s.name).includes(name)
-  //             ? selections.filter((s) => s.name !== name)
-  //             : [...selections, { name, after: "", before: "" }]
-  //         )
-  //       } else {
-  //         setSelections(selections.filter((s) => s.name !== name))
-  //       }
-  //       // console.log(selections);
-  //       if (inputContent) {
-  //         setInfosStorage(selections)
-  //         printOutput(inputContent, selections)
-  //       }
-  //     })
-  //     const label = document.createElement("label")
-  //     label.textContent = name
-  //     container.appendChild(beforeText)
-  //     container.appendChild(checkbox)
-  //     container.appendChild(label)
-  //     infosContainer.appendChild(container)
-  //     container.appendChild(afterText)
-  //   })
-  //   // result.insertBefore(infosContainer, output)
-  // }
+    );
+    setInfosStorage(selections);
+    printOutput();
+  };
 
   const printOutput = () => {
     const lines = inputContent
@@ -156,59 +109,58 @@ export default function Home() {
           .replace(/\t\t\t/g, "\tempty\tempty\t ")
           .replace(/\t\t/g, "\tempty\t")
       )
-      .filter((line, i) => i !== 0 && line !== "")
+      .filter((line, i) => i !== 0 && line !== "");
     const columns = selections.map(({ name, before, after }) =>
       lines.map((line) => ({
-        value: [...line.matchAll(/[^\t|\n]+/g)]?.[
+        name: [...line.matchAll(/[^\t|\n]+/g)]?.[
           infos.map((i) => i.name).indexOf(name)
         ]?.[0],
         before,
         after,
       }))
-    )
-    console.log({ columns })
+    );
+    console.log({ columns });
 
+    const tracks = [];
     for (let trackIndex = 0; trackIndex < columns[0]?.length; trackIndex++) {
-      let track = ""
-      for (let columnIndex = 0; columnIndex < columns.length; columnIndex++) {
-        track = columns
+      tracks.push(
+        columns
           .map(
             (col) =>
-              `${col[trackIndex].before}${col[trackIndex].value}${col[trackIndex].after}`
+              `${col[trackIndex].before}${col[trackIndex].name}${col[trackIndex].after}`
           )
           .join("")
-      }
-      setOutputText(`${outputText}${track}\n`)
+      );
+      console.log({ tracks });
     }
-    // output.width = "100%"
-    // output.rows = lines.length + 1
-  }
+    setOutputText(tracks.join("\n"));
+  };
   const copyClickHandler = () => {
     if (document.selection) {
-      const range = document.body.createTextRange()
-      range.moveToElementText(output)
-      range.select().createTextRange()
-      document.execCommand("copy")
+      const range = document.body.createTextRange();
+      range.moveToElementText(output);
+      range.select().createTextRange();
+      document.execCommand("copy");
     } else if (window.getSelection) {
-      const range = document.createRange()
-      range.selectNode(output)
-      window.getSelection().addRange(range)
-      document.execCommand("copy")
-      alert(`Output for ${lines.length + 1} tracks copied to clipboard.`)
+      const range = document.createRange();
+      range.selectNode(output);
+      window.getSelection().addRange(range);
+      document.execCommand("copy");
+      alert(`Output for ${lines.length + 1} tracks copied to clipboard.`);
     }
-  }
+  };
 
   return (
     <div className={styles.container}>
       <Head>
         <title>Track ID Me!</title>
-        <link rel='icon' href='/favicon.ico' />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main>
         <div
           className={styles.dropZone}
-          id='drop_zone'
+          id="drop_zone"
           onDrop={dropHandler}
           onDragOver={dragOverHandler}
           onDragLeave={dragLeaveHandler}
@@ -216,24 +168,28 @@ export default function Home() {
           <p>
             Drag a
             <img
-              loading='lazy'
-              decoding='async'
-              src='https://rekordbox.com/wp-content/themes/rekordbox/assets/img/2022/common/logo/rekordbox.svg'
-              alt='rekordbox'
-              width='90'
-              height='13'
+              loading="lazy"
+              decoding="async"
+              src="https://rekordbox.com/wp-content/themes/rekordbox/assets/img/2022/common/logo/rekordbox.svg"
+              alt="rekordbox"
+              width="90"
+              height="13"
             />
             playlist .txt file <i>here</i> or attach a file.{" "}
-            <input type='file' id='input' onChange={changeHandler} />
+            <input type="file" id="input" onChange={changeHandler} />
           </p>
         </div>
         <div>
-          {infos?.map(({ name, before, after }) => (
-            <div>
-              <textarea value={before} onChange={handleDelimiterChange} />
+          {infos?.map(({ name, before, after }, index) => (
+            <div key={`${index} ${name}`}>
+              <textarea
+                id={`before_${name}`}
+                defaultValue={before}
+                onChange={handleDelimiterChange}
+              />
               <input
                 id={name}
-                type='checkbox'
+                type="checkbox"
                 checked={selections.map((s) => s.name).includes(name)}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -241,24 +197,35 @@ export default function Home() {
                       selections.map((s) => s.name).includes(name)
                         ? selections.filter((s) => s.name !== name)
                         : [...selections, { name, after: "", before: "" }]
-                    )
+                    );
                   } else {
-                    setSelections(selections.filter((s) => s.name !== name))
+                    setSelections(selections.filter((s) => s.name !== name));
                   }
-                  // console.log(selections);
+                  console.log({ selections });
                   if (inputContent) {
-                    setInfosStorage(selections)
-                    printOutput(inputContent, selections)
+                    setInfosStorage(selections);
+                    printOutput();
                   }
                 }}
               />
               <label>{name}</label>
-              <textarea value={after} onChange={handleDelimiterChange} />
+              <textarea
+                id={`after_${name}`}
+                defaultValue={after}
+                onChange={handleDelimiterChange}
+              />
             </div>
           ))}
         </div>
         <div className={styles.result}>
-          <textarea value={outputText} width='100%' />
+          <textarea
+            defaultValue={outputText}
+            onChange={(e) => setOutputText(e.target.value)}
+            rows={outputText.split(/\n/).length + 1}
+            cols={outputText
+              .split(/\n/)
+              .reduce((a, b) => (a.length > b.length ? a.length : b.length))}
+          ></textarea>
           <button onClick={copyClickHandler}>Copy 📋</button>
         </div>
       </main>
@@ -277,5 +244,5 @@ export default function Home() {
         }
       `}</style>
     </div>
-  )
+  );
 }
