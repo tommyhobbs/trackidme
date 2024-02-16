@@ -3,10 +3,17 @@
   padding: 8px;
   border: 5px dashed lightgrey;
   background-color: black;
-  width: 200px;
-  height: 100px;
+  width: 400px;
 }
 
 .result {
   white-space: pre-line;
+}
+
+.rekordbox {
+  margin: 0 8px;
+}
+
+.manual {
+  margin: 16px;
 }
