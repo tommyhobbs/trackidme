@@ -9,6 +9,7 @@ export default function Home() {
   const [selections, setSelections] = useState([])
   const [outputText, setOutputText] = useState("")
   const dropZoneRef = useRef(null)
+  const outputTextRef = useRef(null)
 
   useEffect(() => {
     const reader = new FileReader()
@@ -112,19 +113,17 @@ export default function Home() {
     // console.log({ tracks })
     setOutputText(tracks.join("\n"))
   }
-  const copyClickHandler = () => {
-    // if (document.selection) {
-    //   const range = document.body.createTextRange()
-    //   range.moveToElementText(output)
-    //   range.select().createTextRange()
-    //   document.execCommand("copy")
-    // } else if (window.getSelection) {
-    //   const range = document.createRange()
-    //   range.selectNode(output)
-    //   window.getSelection().addRange(range)
-    //   document.execCommand("copy")
-    //   alert(`Output for ${lines.length + 1} tracks copied to clipboard.`)
-    // }
+  const copyClickHandler = async () => {
+    if ("clipboard" in navigator) {
+      await navigator.clipboard.writeText(outputText)
+    } else {
+      document.execCommand("copy", true, outputText)
+    }
+    alert(
+      `Output for ${
+        outputText.split("\n").length + 1
+      } tracks copied to clipboard.`
+    )
   }
 
   return (
@@ -223,6 +222,7 @@ export default function Home() {
         {outputText ? (
           <div className={styles.result}>
             <textarea
+              ref={outputTextRef}
               value={outputText}
               onChange={(e) => setOutputText(e.target.value)}
               rows={outputText.split(/\n/).length + 1}
