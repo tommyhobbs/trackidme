@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react"
 export default function Home() {
   const [reader, setReader] = useState({})
   const [inputContent, setInputContent] = useState("")
-  const [infos, setInfos] = useState([])
+  const [options, setOptions] = useState([])
   const [selections, setSelections] = useState([])
   const [outputText, setOutputText] = useState("")
   const dropZoneRef = useRef(null)
@@ -23,7 +23,7 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    setInfos(
+    setOptions(
       [
         ...inputContent
           .split("\n")
@@ -38,15 +38,17 @@ export default function Home() {
           before: infoFromStorage?.before || "",
           after: infoFromStorage?.after || "",
         }
-      })
+      }),
+      printOutput()
     )
   }, [inputContent])
 
   useEffect(() => {
+    setoptionsStorage(selections)
     printOutput()
   }, [selections])
 
-  const setInfosStorage = (selections) => {
+  const setoptionsStorage = (selections) => {
     const selectionsString = JSON.stringify(selections)
     window.localStorage.setItem("selections", selectionsString)
   }
@@ -69,7 +71,7 @@ export default function Home() {
         return selection
       })
     )
-    setInfosStorage(selections)
+    setoptionsStorage(selections)
     printOutput()
   }
 
@@ -84,18 +86,18 @@ export default function Home() {
       )
       .filter((line, i) => i !== 0 && line !== "")
 
-    console.log({ lines })
-    console.log({ infos })
+    // console.log({ lines })
+    // console.log({ options })
     const columns = selections.map(({ name, before, after }) =>
       lines.map((line) => ({
         name: [...line.matchAll(/[^\t|\n]+/g)]?.[
-          infos.map((i) => i.name).indexOf(name)
+          options.map((i) => i.name).indexOf(name)
         ]?.[0],
         before,
         after,
       }))
     )
-    console.log({ columns })
+    // console.log({ columns })
     const tracks = []
     for (let trackIndex = 0; trackIndex < columns[0]?.length; trackIndex++) {
       tracks.push(
@@ -107,6 +109,7 @@ export default function Home() {
           .join("")
       )
     }
+    // console.log({ tracks })
     setOutputText(tracks.join("\n"))
   }
   const copyClickHandler = () => {
@@ -181,7 +184,7 @@ export default function Home() {
           </p>
         </div>
         <div>
-          {infos?.map(({ name, before, after }, index) => (
+          {options?.map(({ name, before, after }, index) => (
             <div key={`${index} ${name}`}>
               <textarea
                 id={`before_${name}`}
@@ -204,10 +207,6 @@ export default function Home() {
                   } else {
                     setSelections(selections.filter((s) => s.name !== name))
                   }
-                  if (inputContent) {
-                    setInfosStorage(selections)
-                    printOutput()
-                  }
                 }}
               />
               <label>{name}</label>
@@ -224,13 +223,13 @@ export default function Home() {
         {outputText ? (
           <div className={styles.result}>
             <textarea
-              defaultValue={outputText}
+              value={outputText}
               onChange={(e) => setOutputText(e.target.value)}
               rows={outputText.split(/\n/).length + 1}
               cols={outputText
                 .split(/\n/)
                 .reduce((a, b) => (a.length > b.length ? a.length : b.length))}
-            ></textarea>
+            />
             <button onClick={copyClickHandler}>Copy 📋</button>
           </div>
         ) : null}
