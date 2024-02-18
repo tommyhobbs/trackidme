@@ -9,11 +9,30 @@ export default function Home() {
   const [selections, setSelections] = useState([])
   const [outputText, setOutputText] = useState("")
   const dropZoneRef = useRef(null)
-  const outputTextRef = useRef(null)
 
   useEffect(() => {
     const reader = new FileReader()
-    reader.addEventListener("load", (e) => setInputContent(e.target.result))
+    reader.addEventListener("load", (e) => {
+      setInputContent(e.target.result)
+      setOptions(
+        [
+          ...e.target.result
+            .split("\n")
+            .shift()
+            .matchAll(/(.+?)(?:\t|\n)/g),
+        ].map((match) => {
+          console.log({ match })
+          const infoFromStorage = selections.find(
+            (sel) => sel.name === match?.[0].replace("\t", "")
+          )
+          return {
+            name: match?.[0].replace("\t", ""),
+            before: infoFromStorage?.before || "",
+            after: infoFromStorage?.after || "",
+          }
+        })
+      )
+    })
     setReader(reader)
     if (window?.localStorage.getItem("selections")) {
       setSelections(JSON.parse(window.localStorage.getItem("selections")))
@@ -31,6 +50,7 @@ export default function Home() {
           .shift()
           .matchAll(/(.+?)(?:\t|\n)/g),
       ].map((match) => {
+        console.log({ match })
         const infoFromStorage = selections.find(
           (sel) => sel.name === match?.[0].replace("\t", "")
         )
@@ -39,17 +59,17 @@ export default function Home() {
           before: infoFromStorage?.before || "",
           after: infoFromStorage?.after || "",
         }
-      }),
-      printOutput()
+      })
     )
+    printOutput()
   }, [inputContent])
 
   useEffect(() => {
-    setoptionsStorage(selections)
+    setSelectionsStorage(selections)
     printOutput()
   }, [selections])
 
-  const setoptionsStorage = (selections) => {
+  const setSelectionsStorage = (selections) => {
     const selectionsString = JSON.stringify(selections)
     window.localStorage.setItem("selections", selectionsString)
   }
@@ -72,7 +92,7 @@ export default function Home() {
         return selection
       })
     )
-    setoptionsStorage(selections)
+    setSelectionsStorage(selections)
     printOutput()
   }
 
@@ -88,7 +108,7 @@ export default function Home() {
       .filter((line, i) => i !== 0 && line !== "")
 
     // console.log({ lines })
-    // console.log({ options })
+    console.log({ options })
     const columns = selections.map(({ name, before, after }) =>
       lines.map((line) => ({
         name: [...line.matchAll(/[^\t|\n]+/g)]?.[
@@ -98,7 +118,7 @@ export default function Home() {
         after,
       }))
     )
-    // console.log({ columns })
+    console.log({ columns })
     const tracks = []
     for (let trackIndex = 0; trackIndex < columns[0]?.length; trackIndex++) {
       tracks.push(
@@ -222,7 +242,6 @@ export default function Home() {
         {outputText ? (
           <div className={styles.result}>
             <textarea
-              ref={outputTextRef}
               value={outputText}
               onChange={(e) => setOutputText(e.target.value)}
               rows={outputText.split(/\n/).length + 1}
