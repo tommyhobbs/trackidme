@@ -1,13 +1,10 @@
 .dropZone {
+  margin: 0 auto;
   color: white;
   padding: 8px;
   border: 5px dashed lightgrey;
   background-color: black;
   width: 400px;
-}
-
-.result {
-  white-space: pre-line;
 }
 
 .rekordbox {
@@ -16,4 +13,9 @@
 
 .manual {
   margin: 16px;
+}
+
+.result {
+  width: 100%;
+  white-space: pre-line;
 }

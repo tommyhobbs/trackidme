@@ -27,7 +27,6 @@ export default function Home() {
           )
           return {
             name: match?.[0].replace("\t", ""),
-            before: infoFromStorage?.before || "",
             after: infoFromStorage?.after || "",
           }
         })
@@ -56,7 +55,7 @@ export default function Home() {
         )
         return {
           name: match?.[0].replace("\t", ""),
-          before: infoFromStorage?.before || "",
+          // before: infoFromStorage?.before || "",
           after: infoFromStorage?.after || "",
         }
       })
@@ -159,7 +158,7 @@ export default function Home() {
           id='drop_zone'
           ref={dropZoneRef}
           style={
-            outputText
+            inputContent
               ? {}
               : {
                   position: "absolute",
@@ -203,15 +202,8 @@ export default function Home() {
           </p>
         </div>
         <div>
-          {options?.map(({ name, before, after }, index) => (
-            <div key={`${index} ${name}`}>
-              <textarea
-                id={`before_${name}`}
-                defaultValue={before}
-                onChange={handleDelimiterChange}
-                rows={1}
-                cols={3}
-              />
+          {options?.map(({ name, after }, index) => (
+            <span key={`${index} ${name}`}>
               <input
                 id={name}
                 type='checkbox'
@@ -236,19 +228,19 @@ export default function Home() {
                 rows={1}
                 cols={3}
               />
-            </div>
+            </span>
           ))}
         </div>
-        {outputText ? (
-          <div className={styles.result}>
-            <textarea
-              value={outputText}
-              onChange={(e) => setOutputText(e.target.value)}
-              rows={outputText.split(/\n/).length + 1}
-              cols={outputText
-                .split(/\n/)
-                .reduce((a, b) => (a.length > b.length ? a.length : b.length))}
-            />
+        {inputContent ? (
+          <div>
+            <div className={styles.result}>
+              <textarea
+                defaultValue={outputText}
+                onChange={(e) => setOutputText(e.target.value)}
+                rows={outputText.split(/\n/).length}
+                style={{ width: "100%" }}
+              />
+            </div>
             <button onClick={copyClickHandler}>Copy 📋</button>
           </div>
         ) : null}
