@@ -1,10 +1,11 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import { useEffect, useRef, useState } from 'react'
+import Select from 'react-select'
 
 const CANVAS_SIZE = 1000
 
-export default function Home() {
+export default function Home({ fonts }) {
   const [reader, setReader] = useState({})
   const [bgImgReader, setBgImgReader] = useState({})
   const [inputContent, setInputContent] = useState('')
@@ -16,8 +17,16 @@ export default function Home() {
   const dropZoneRef = useRef(null)
   const canvasRef = useRef(null)
   const [fontSize, setFontSize] = useState('16px')
+  const [activeFontFamily, setActiveFontFamily] = useState('')
   const [fontColor, setFontColor] = useState('#000000')
   const [bgColor, setBgColor] = useState('#FFFFFF')
+
+  const fontOptions = fonts.map((font) => ({
+    value: font.family,
+    label: font.family,
+  }))
+
+  console.log(activeFontFamily)
 
   useEffect(() => {
     const reader = new FileReader()
@@ -177,7 +186,8 @@ export default function Home() {
       bgImg && ctx.drawImage(bgImg, 0, 0, CANVAS_SIZE, CANVAS_SIZE)
       const lines = outputText.split('\n')
       const lineHeight = CANVAS_SIZE / lines.length
-      ctx.font = `${fontSize} serif`
+
+      ctx.font = `${fontSize} ${activeFontFamily}`
       ctx.fillStyle = fontColor
       outputText.split('\n').map((line, index) => {
         ctx.fillText(
@@ -196,6 +206,14 @@ export default function Home() {
       <Head>
         <title>Track ID Me!</title>
         <link rel="icon" href="/favicon.ico" />
+        <link
+          rel="stylesheet"
+          href={encodeURI(
+            `https://fonts.googleapis.com/css?family=${fonts
+              .map((font) => font.family)
+              .join('&')}`
+          )}
+        />
       </Head>
 
       <main>
@@ -283,69 +301,99 @@ export default function Home() {
           ))}
         </div>
         {inputContent ? (
-          <div>
-            <div className={styles.result}>
-              <textarea
-                defaultValue={outputText}
-                onChange={(e) => setOutputText(e.target.value)}
-                rows={outputText.split(/\n/).length}
-                style={{ width: '100%' }}
-              />
+          <div className={styles.outputContainer}>
+            <div>
+              <h2>Output Text</h2>
+              <div className={styles.result}>
+                <textarea
+                  defaultValue={outputText}
+                  onChange={(e) => setOutputText(e.target.value)}
+                  rows={outputText.split(/\n/).length}
+                  className={styles.outputText}
+                />
+              </div>
+              <button onClick={copyClickHandler}>
+                Copy Text to Clipboard 📋
+              </button>
             </div>
-            <button onClick={copyClickHandler}>
-              Copy Text to Clipboard 📋
-            </button>
-            <label htmlFor="fontsize">Font size (px): </label>
-            <input
-              id="fontsize"
-              type="number"
-              defaultValue={Number(fontSize.replace('px', ''))}
-              onChange={(e) => setFontSize(`${e.target.value}px`)}
-              style={{ width: '45px' }}
-            />
-            <span>
-              <label for="fontColor">Font Colour</label>
-              <input
-                type="color"
-                id="fontColor"
-                name="head"
-                value={fontColor}
-                onChange={(e) => setFontColor(e.target.value)}
+            <div>
+              <h2>Output Image</h2>
+              <Select
+                options={fontOptions}
+                styles={{
+                  singleValue: (styles) => ({
+                    ...styles,
+                    fontFamily: activeFontFamily,
+                  }),
+                  option: (styles, { value }) => ({
+                    ...styles,
+                    fontFamily: value,
+                  }),
+                }}
+                placeholder="Select a font..."
+                defaultValue={activeFontFamily}
+                onChange={({ value }) => setActiveFontFamily(value)}
               />
-            </span>
-            <span>
-              <label for="bgColor">Background Colour</label>
+              <div>
+                <label htmlFor="fontsize">Font size (px): </label>
+                <input
+                  id="fontsize"
+                  type="number"
+                  defaultValue={Number(fontSize.replace('px', ''))}
+                  onChange={(e) => setFontSize(`${e.target.value}px`)}
+                  style={{ width: '45px' }}
+                />
+                <span>
+                  <label for="fontColor">Font Colour</label>
+                  <input
+                    type="color"
+                    id="fontColor"
+                    name="head"
+                    value={fontColor}
+                    onChange={(e) => setFontColor(e.target.value)}
+                  />
+                </span>
+              </div>
+              <span>
+                <label for="bgColor">Background Colour</label>
+                <input
+                  type="color"
+                  id="bgColor"
+                  name="head"
+                  value={bgColor}
+                  onChange={(e) => setBgColor(e.target.value)}
+                />
+              </span>
+              <label htmlFor="bgImg">Image:</label>
               <input
-                type="color"
-                id="bgColor"
-                name="head"
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
+                type="file"
+                id="bgImg"
+                accept=".jpg,.png"
+                onChange={(event) => {
+                  bgImgReader.readAsDataURL(event.target?.files?.[0])
+                }}
               />
-            </span>
-            <label htmlFor="bgImg">Background Image:</label>
-            <input
-              type="file"
-              id="bgImg"
-              accept=".jpg,.png"
-              onChange={(event) => {
-                bgImgReader.readAsDataURL(event.target?.files?.[0])
-              }}
-            />
-            <a
-              download={inputFileName?.replace('.txt', '.png')}
-              href={canvasRef?.current?.toDataURL('image/png')}
-            >
-              Save as Image 🖼️
-            </a>
-            <canvas
-              width={1000}
-              height={1000}
-              ref={canvasRef}
-              className={styles.canvas}
-            ></canvas>
+              <canvas
+                width={1000}
+                height={1000}
+                ref={canvasRef}
+                className={styles.canvas}
+              ></canvas>
+              <a
+                download={inputFileName?.replace('.txt', '.png')}
+                href={canvasRef?.current?.toDataURL('image/png')}
+              >
+                Save as Image 🖼️
+              </a>
+            </div>
           </div>
         ) : null}
+        <a
+          className={styles.github}
+          href="https://github.com/tommyhobbs/trackidme"
+        >
+          <img src="/github-mark.svg" alt="View source code on GitHub" />
+        </a>
       </main>
 
       <style jsx global>{`
@@ -363,4 +411,14 @@ export default function Home() {
       `}</style>
     </div>
   )
+}
+
+export async function getServerSideProps() {
+  const res = await fetch(
+    `https://www.googleapis.com/webfonts/v1/webfonts?key=${process.env.FONTS_API_KEY}&sort=popularity&capability=WOFF2`
+  )
+  const json = await res.json()
+
+  const fonts = [...json.items.slice(0, 500)]
+  return { props: { fonts } }
 }
